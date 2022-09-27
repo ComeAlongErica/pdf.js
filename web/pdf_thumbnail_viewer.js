@@ -212,10 +212,12 @@ class PDFThumbnailViewer {
 
     firstPagePromise
       .then(firstPdfPage => {
-        const pagesCount = pdfDocument.numPages;
+        // const pagesCount = pdfDocument.numPages;
         const viewport = firstPdfPage.getViewport({ scale: 1 });
 
-        for (let pageNum = 1; pageNum <= pagesCount; ++pageNum) {
+        // only add if a part of array
+        const showIndexes = [14, 1];
+        for (let pageNum = 1; pageNum <= showIndexes.length; ++pageNum) {
           const thumbnail = new PDFThumbnailView({
             container: this.container,
             id: pageNum,
@@ -225,13 +227,14 @@ class PDFThumbnailViewer {
             renderingQueue: this.renderingQueue,
             l10n: this.l10n,
             pageColors: this.pageColors,
+            originalPageNumber: showIndexes[pageNum - 1],
           });
           this._thumbnails.push(thumbnail);
         }
         // Set the first `pdfPage` immediately, since it's already loaded,
         // rather than having to repeat the `PDFDocumentProxy.getPage` call in
         // the `this.#ensurePdfPageLoaded` method before rendering can start.
-        this._thumbnails[0]?.setPdfPage(firstPdfPage);
+        // this._thumbnails[0]?.setPdfPage(firstPdfPage);
 
         // Ensure that the current thumbnail is always highlighted on load.
         const thumbnailView = this._thumbnails[this._currentPageNumber - 1];
@@ -283,7 +286,9 @@ class PDFThumbnailViewer {
       return thumbView.pdfPage;
     }
     try {
-      const pdfPage = await this.pdfDocument.getPage(thumbView.id);
+      const pdfPage = await this.pdfDocument.getPage(
+        thumbView.originalPageNumber
+      );
       if (!thumbView.pdfPage) {
         thumbView.setPdfPage(pdfPage);
       }

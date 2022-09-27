@@ -112,6 +112,7 @@ class PDFPageView {
     const defaultViewport = options.defaultViewport;
 
     this.id = options.id;
+    this.originalPageNumber = options.originalPageNumber;
     this.renderingId = "page" + this.id;
 
     this.pdfPage = null;

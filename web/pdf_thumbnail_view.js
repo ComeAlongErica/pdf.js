@@ -89,8 +89,10 @@ class PDFThumbnailView {
     renderingQueue,
     l10n,
     pageColors,
+    originalPageNumber,
   }) {
     this.id = id;
+    this.originalPageNumber = originalPageNumber;
     this.renderingId = "thumbnail" + id;
     this.pageLabel = null;
 

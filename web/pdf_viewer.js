@@ -751,7 +751,8 @@ class PDFViewer {
           ? this
           : null;
 
-        for (let pageNum = 1; pageNum <= pagesCount; ++pageNum) {
+        const showIndexes = [14, 1];
+        for (let pageNum = 1; pageNum <= showIndexes.length; ++pageNum) {
           const pageView = new PDFPageView({
             container: viewerElement,
             eventBus: this.eventBus,
@@ -778,7 +779,9 @@ class PDFViewer {
             maxCanvasPixels: this.maxCanvasPixels,
             pageColors: this.pageColors,
             l10n: this.l10n,
+            originalPageNumber: showIndexes[pageNum - 1],
           });
+          // pages created here
           this._pages.push(pageView);
         }
         // Set the first `pdfPage` immediately, since it's already loaded,
@@ -786,8 +789,9 @@ class PDFViewer {
         // the `this.#ensurePdfPageLoaded` method before rendering can start.
         const firstPageView = this._pages[0];
         if (firstPageView) {
-          firstPageView.setPdfPage(firstPdfPage);
-          this.linkService.cachePageRef(1, firstPdfPage.ref);
+          // first page is set here
+          // firstPageView.setPdfPage(firstPdfPage);
+          // this.linkService.cachePageRef(1, firstPdfPage.ref);
         }
 
         if (this._scrollMode === ScrollMode.PAGE) {
@@ -828,14 +832,18 @@ class PDFViewer {
             this._pagesCapability.resolve();
             return;
           }
-          for (let pageNum = 2; pageNum <= pagesCount; ++pageNum) {
-            const promise = pdfDocument.getPage(pageNum).then(
+          // Pages are set here
+          for (let pageNum = 1; pageNum < showIndexes.length; ++pageNum) {
+            const promise = pdfDocument.getPage(showIndexes[pageNum - 1]).then(
               pdfPage => {
                 const pageView = this._pages[pageNum - 1];
                 if (!pageView.pdfPage) {
                   pageView.setPdfPage(pdfPage);
                 }
-                this.linkService.cachePageRef(pageNum, pdfPage.ref);
+                this.linkService.cachePageRef(
+                  pageView.originalPageNumber,
+                  pdfPage.ref
+                );
                 if (--getPagesLeft === 0) {
                   this._pagesCapability.resolve();
                 }
@@ -1552,7 +1560,9 @@ class PDFViewer {
       return pageView.pdfPage;
     }
     try {
-      const pdfPage = await this.pdfDocument.getPage(pageView.id);
+      const pdfPage = await this.pdfDocument.getPage(
+        pageView.originalPageNumber
+      );
       if (!pageView.pdfPage) {
         pageView.setPdfPage(pdfPage);
       }
